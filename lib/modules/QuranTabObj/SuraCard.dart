@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:islami_app/modules/QuranTabObj/SuraDetails.dart';
 
 import '../../core/AppConst/AppConst.dart';
 import '../../core/theme/appColors.dart';
@@ -15,7 +17,8 @@ class Suracard extends StatefulWidget {
 class _SuracardState extends State<Suracard> {
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return
+      Row(
       spacing: 24,
       children: [
         Container(
@@ -75,6 +78,6 @@ class _SuracardState extends State<Suracard> {
           ),
         ),
       ],
-    );
+          );
   }
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 
 import '../../core/theme/appColors.dart';
+import '../../models/Sura.dart';
 
 class MostRecent extends StatefulWidget {
-  const MostRecent({super.key});
+  List<Sura>Recent;
+  int index;
+  MostRecent({super.key, required this.Recent,required this.index});
 
   @override
   State<MostRecent> createState() => _MostRecentState();
@@ -32,29 +35,29 @@ class _MostRecentState extends State<MostRecent> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Al-Anbiya",
+                    widget.Recent[widget.index].EnglishName,
                     style: TextStyle(
                       color: appColors.secondaryColor,
                       fontFamily: 'jana',
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   Text(
-                    "الأنبياء",
+                    widget.Recent[widget.index].ArabicName,
                     style: TextStyle(
                       color: appColors.secondaryColor,
                       fontFamily: 'jana',
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   Text(
-                    "112 Verses ",
+                    "${widget.Recent[widget.index].Verses} Verses",
                     style: TextStyle(
                       color: appColors.secondaryColor,
                       fontFamily: 'jana',
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

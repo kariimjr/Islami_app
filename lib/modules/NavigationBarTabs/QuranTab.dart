@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:islami_app/core/Caching/CachingKeys.dart';
+import 'package:islami_app/core/init_app.dart';
 import 'package:islami_app/modules/QuranTabObj/MostRecently.dart';
 import 'package:islami_app/modules/QuranTabObj/SuraCard.dart';
 import 'package:islami_app/modules/QuranTabObj/SearchBar.dart';
+import 'package:islami_app/modules/QuranTabObj/SuraDetails.dart';
 import '../../models/Sura.dart';
 import '../../core/AppConst/AppConst.dart';
 import '../../core/theme/appColors.dart';
@@ -18,11 +21,11 @@ class _QurantabState extends State<Qurantab> {
   TextEditingController search = TextEditingController();
   List<Sura> Searched = [];
   List<Sura> Quran = [];
+  List<Sura> Recent = [];
   @override
   void initState() {
     super.initState();
     ReadQuran();
-
     search.addListener(() {
       setState(() {
         if (search.text.isEmpty) {
@@ -38,6 +41,7 @@ class _QurantabState extends State<Qurantab> {
         }
       });
     });
+    getRecent();
   }
 
   @override
@@ -70,34 +74,46 @@ class _QurantabState extends State<Qurantab> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 20),
-            child: Column(
-              spacing: 10,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Most Recently",
-                  style: TextStyle(
-                    color: appColors.offWhite,
-                    fontFamily: 'jana',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+          Recent.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: Column(
+                    spacing: 10,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Most Recently",
+                        style: TextStyle(
+                          color: appColors.offWhite,
+                          fontFamily: 'jana',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 150,
+                        child: ListView.separated(
+                          itemCount: Recent.length.clamp(0, 3),
+                          separatorBuilder: (context, index) =>
+                              SizedBox(width: 10),
+                          scrollDirection: Axis.horizontal,
+                          physics: ClampingScrollPhysics(),
+                          itemBuilder: (context, index) => InkWell(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                SuraDetails.route,
+                                arguments: Recent[index],
+                              );
+                            },
+                            child: MostRecent(index: index, Recent: Recent),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(
-                  height: 150,
-                  child: ListView.separated(
-                    separatorBuilder: (context, index) => SizedBox(width: 10),
-                    scrollDirection: Axis.horizontal,
-                    physics: ClampingScrollPhysics(),
-                    itemCount: 3,
-                    itemBuilder: (context, index) => MostRecent(),
-                  ),
-                ),
-              ],
-            ),
-          ),
+                )
+              : SizedBox(height: 0),
 
           Expanded(
             child: Padding(
@@ -119,8 +135,31 @@ class _QurantabState extends State<Qurantab> {
                       padding: EdgeInsets.all(0),
                       scrollDirection: Axis.vertical,
                       physics: BouncingScrollPhysics(),
-                      itemBuilder: (context, index) =>
-                          Suracard(sura: Searched[index]),
+                      itemBuilder: (context, index) => InkWell(
+                        onTap: () {
+                          if (Recent.length > 3) {
+                            Recent.removeLast();
+                            Recent.insert(0, (Searched[index]));
+                          } else {
+                            if (!Recent.contains(Searched[index])) {
+                              Recent.insert(0, (Searched[index]));
+                            }
+                          }
+
+                          InitApp.sharedPreferences.setStringList(
+                            CachingKeys.getRecent,
+                            Recent.map((sura) => sura.Id.toString()).toList(),
+                          );
+
+                          setState(() {});
+                          Navigator.pushNamed(
+                            context,
+                            SuraDetails.route,
+                            arguments: Searched[index],
+                          );
+                        },
+                        child: Suracard(sura: Searched[index]),
+                      ),
                       separatorBuilder: (context, index) => Divider(
                         indent: 64,
                         endIndent: 64,
@@ -157,5 +196,17 @@ class _QurantabState extends State<Qurantab> {
   void dispose() {
     super.dispose();
     search.dispose();
+  }
+
+  getRecent() {
+    List<int> recentIndex =
+        InitApp.sharedPreferences
+            .getStringList(CachingKeys.getRecent)
+            ?.map((index) => int.parse(index))
+            .toList() ??
+        [];
+    Recent = recentIndex.map((id) => Quran.firstWhere((sura) => sura.Id == id)).toList();
+
+    setState(() {});
   }
 }
